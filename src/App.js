@@ -1,24 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useReducer } from 'react';
+import { Header, Container } from 'semantic-ui-react';
 
-function App() {
+import TodoList from './components/TodoList';
+import TodoForm from './components/TodoForm';
+
+const todoReducer = (state, payload) => {
+  const { type, ...todo } = payload;
+
+  switch (type) {
+    case 'addTodo':
+      const exists = state.find(currTodo => currTodo.text === todo.text);
+      return (
+        exists
+          ? state
+          : [...state, todo]
+      );
+    case 'removeTodo':
+      return state.filter(todo => todo.text !== payload.text);
+    case 'updateTodo':
+      return state.map(
+        currTodo => currTodo.text !== payload.text
+          ? currTodo
+          : {...todo, completed: !currTodo.completed }
+      );
+    default:
+      return state; 
+  }
+}
+
+const App = () => {
+  const [todos, updateTodos] = useReducer(todoReducer, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ marginTop: 20 }}>
+      <Container>
+        <Header as='h2' textAlign="center" size="huge">Todo List App</Header>
+        <TodoList todos={todos} updateTodos={updateTodos} />
+        <TodoForm updateTodos={updateTodos} />
+      </Container>
     </div>
   );
 }
